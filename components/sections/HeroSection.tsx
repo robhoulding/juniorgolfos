@@ -1,11 +1,11 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { PremiumImage } from "@/components/ui/PremiumImage";
 import { MotionReveal } from "@/components/ui/MotionReveal";
-import { HERO_STRIP } from "@/lib/landing-content";
+import { HERO_HEADLINE, HERO_STRIP, HERO_SUBHEAD, HERO_TRUST_ITEMS } from "@/lib/landing-content";
 import { IMAGES } from "@/lib/images";
 import { getSignupHref, LINKS } from "@/lib/links";
 
@@ -19,36 +19,16 @@ export function HeroSection() {
         <div className="flex flex-col gap-10 lg:flex-row lg:items-stretch lg:gap-8">
           <div className="flex flex-col justify-center lg:w-1/2 lg:min-w-0 lg:pr-2">
             <MotionReveal delay={0}>
-              <p className="section-eyebrow">
-                For families who take junior golf seriously
-              </p>
-            </MotionReveal>
-
-            <MotionReveal delay={0.05}>
-              <h1 id="hero-heading" className="hero-headline mt-3">
-                Built for families seeking proven guidance from the world&apos;s
-                most experienced long-term development coaches.
+              <h1 id="hero-heading" className="hero-headline">
+                {HERO_HEADLINE}
               </h1>
             </MotionReveal>
 
+            <MotionReveal delay={0.05}>
+              <p className="hero-subhead mt-5">{HERO_SUBHEAD}</p>
+            </MotionReveal>
+
             <MotionReveal delay={0.1}>
-              <p className="hero-subhead mt-5">
-                Coaching that gives players a{" "}
-                <span className="text-emerald-300">competitive advantage</span> —
-                because every part of their development works together, in
-                context, over time.
-              </p>
-            </MotionReveal>
-
-            <MotionReveal delay={0.12}>
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-text-mid">
-                Not another lesson app. The family connection to GolfCoachOS —
-                where trained professionals, your child&apos;s full development
-                picture, and continuous intelligence meet.
-              </p>
-            </MotionReveal>
-
-            <MotionReveal delay={0.15}>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Button variant="primary" size="lg" href={getSignupHref()}>
                   Start Free
@@ -60,11 +40,21 @@ export function HeroSection() {
               </div>
             </MotionReveal>
 
-            <MotionReveal delay={0.18}>
-              <p className="trust-line mt-5">
-                Structure is free forever · Upgrade when age, stage, and need
-                require it · Powered by GolfCoachOS
-              </p>
+            <MotionReveal delay={0.12}>
+              <ul className="mt-5 space-y-2">
+                {HERO_TRUST_ITEMS.map((item) => (
+                  <li
+                    key={item}
+                    className="flex gap-2.5 text-sm leading-relaxed text-text-mid"
+                  >
+                    <Check
+                      className="mt-0.5 size-3.5 shrink-0 text-emerald-400"
+                      aria-hidden
+                    />
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </MotionReveal>
           </div>
 
