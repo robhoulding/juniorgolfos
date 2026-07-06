@@ -205,7 +205,7 @@ function SignupFormContent() {
       <div className="relative min-h-[70vh] py-24 sm:py-28">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_20%,rgba(13,122,86,0.08),transparent_65%)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_20%,rgba(236,105,26,0.08),transparent_65%)]"
         />
         <Container className="relative max-w-lg">
           <MotionReveal>
@@ -247,7 +247,7 @@ function SignupFormContent() {
     <div className="relative min-h-[70vh] py-24 sm:py-28">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_20%,rgba(13,122,86,0.08),transparent_65%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_20%,rgba(236,105,26,0.08),transparent_65%)]"
       />
 
       <Container className="relative max-w-xl">

@@ -10,6 +10,7 @@ type PremiumImageProps = {
   priority?: boolean;
   className?: string;
   overlay?: "bottom" | "full" | "none";
+  fit?: "cover" | "contain";
   sizes?: string;
 };
 
@@ -28,6 +29,7 @@ export function PremiumImage({
   priority = false,
   className,
   overlay = "bottom",
+  fit = "cover",
   sizes = "(max-width: 1024px) 100vw, 50vw",
 }: PremiumImageProps) {
   const [failed, setFailed] = useState(false);
@@ -43,7 +45,10 @@ export function PremiumImage({
           fill
           priority={priority}
           sizes={sizes}
-          className="object-cover object-center"
+          className={cn(
+            "object-center",
+            fit === "contain" ? "object-contain" : "object-cover",
+          )}
           onError={() => setFailed(true)}
         />
       )}

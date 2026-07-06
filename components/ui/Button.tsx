@@ -6,7 +6,7 @@ const variants = {
   secondary: "btn-glass",
   ghost: "text-text-mid hover:text-text-hi hover:bg-white/[0.04] border border-transparent",
   gold:
-    "bg-gradient-to-r from-gold-500 to-gold-400 text-bg-base shadow-[0_4px_24px_rgba(201,162,39,0.25)] hover:shadow-[0_8px_32px_rgba(201,162,39,0.35)]",
+    "bg-[#EC691A] text-white shadow-[0_4px_24px_rgba(236,105,26,0.25)] hover:bg-[#d45e16] hover:shadow-[0_8px_32px_rgba(236,105,26,0.35)]",
 } as const;
 
 const sizes = {

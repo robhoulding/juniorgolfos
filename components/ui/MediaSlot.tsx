@@ -34,7 +34,7 @@ export function MediaSlot({
       role="img"
       aria-label={`${kind} placeholder: ${label}`}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_30%,rgba(13,122,86,0.12),transparent_65%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_30%,rgba(236,105,26,0.12),transparent_65%)]" />
       <div className="relative flex flex-col items-center gap-3 px-6 text-center">
         <span className="flex size-12 items-center justify-center rounded-full border border-white/10 bg-white/[0.04]">
           <Icon className="size-5 text-emerald-400" aria-hidden />

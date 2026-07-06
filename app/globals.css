@@ -1,35 +1,49 @@
 @import "tailwindcss";
 
-/* ─── JuniorGolfParent — Premium Design System ─── */
+/* ─── JuniorGolfOS — GolfCoachOS brand alignment ─── */
 :root {
-  --bg-base: #020805;
-  --bg-elevated: #051510;
-  --bg-panel: #081f18;
-  --emerald-300: #5cb896;
-  --emerald-400: #2d9a72;
-  --emerald-500: #0d7a56;
-  --emerald-600: #065f42;
-  --emerald-900: #043d2e;
-  --emerald-950: #021a12;
-  --gold-400: #c9a227;
-  --gold-500: #a8841a;
-  --text-hi: #edf5f0;
-  --text-mid: rgba(237, 245, 240, 0.58);
-  --text-low: rgba(237, 245, 240, 0.36);
+  /* Locked GolfCoachOS palette */
+  --brand-accent: #ec691a;
+  --brand-bg: #191919;
+  --brand-page: #070f1e;
+  --brand-surface: #111827;
+  --brand-surface-alt: #414141;
+  --brand-text: #ffffff;
+  --brand-muted: #c1c1c1;
+
+  --bg-base: var(--brand-page);
+  --bg-elevated: var(--brand-bg);
+  --bg-panel: var(--brand-surface);
+
+  /* Legacy token names → orange accent (keeps components working) */
+  --emerald-100: #fde8d8;
+  --emerald-300: #f5a66b;
+  --emerald-400: #ec691a;
+  --emerald-500: #d45e16;
+  --emerald-600: #b84f12;
+  --emerald-900: #3d2010;
+  --emerald-950: #1a0f08;
+  --gold-400: #ec691a;
+  --gold-500: #d45e16;
+
+  --text-hi: var(--brand-text);
+  --text-mid: var(--brand-muted);
+  --text-low: rgba(193, 193, 193, 0.55);
 
   --container-max: 1180px;
   --radius-card: 1.75rem;
-  --card-bg: rgba(255, 255, 255, 0.035);
-  --card-border: rgba(255, 255, 255, 0.075);
-  --shadow-soft: 0 12px 32px rgba(0, 0, 0, 0.16);
-  --font-family-display: var(--font-fraunces), Georgia, serif;
-  --font-family-body: "General Sans", system-ui, sans-serif;
+  --card-bg: rgba(17, 24, 39, 0.72);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --shadow-soft: 0 12px 32px rgba(0, 0, 0, 0.28);
+  --font-family-display: var(--font-oswald), "Oswald", sans-serif;
+  --font-family-body: var(--font-inter), "Inter", system-ui, sans-serif;
 }
 
 @theme inline {
   --color-bg-base: var(--bg-base);
   --color-bg-elevated: var(--bg-elevated);
   --color-bg-panel: var(--bg-panel);
+  --color-emerald-100: var(--emerald-100);
   --color-emerald-300: var(--emerald-300);
   --color-emerald-400: var(--emerald-400);
   --color-emerald-500: var(--emerald-500);
@@ -41,11 +55,12 @@
   --color-text-hi: var(--text-hi);
   --color-text-mid: var(--text-mid);
   --color-text-low: var(--text-low);
-  --font-family-display: var(--font-fraunces), Georgia, serif;
-  --font-family-body: "General Sans", system-ui, sans-serif;
-  --font-family-sans: "General Sans", system-ui, sans-serif;
-  --font-body: "General Sans", system-ui, sans-serif;
-  --font-sans: "General Sans", system-ui, sans-serif;
+  --font-family-display: var(--font-family-display);
+  --font-family-body: var(--font-family-body);
+  --font-family-sans: var(--font-family-body);
+  --font-display: var(--font-family-display);
+  --font-body: var(--font-family-body);
+  --font-sans: var(--font-family-body);
   --radius-card: 1.75rem;
 }
 
@@ -78,7 +93,7 @@ body {
 }
 
 ::selection {
-  background: rgba(13, 122, 86, 0.35);
+  background: rgba(236, 105, 26, 0.35);
   color: var(--text-hi);
 }
 
@@ -96,8 +111,8 @@ body {
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -8%, rgba(13, 122, 86, 0.07), transparent 55%),
-    radial-gradient(ellipse 50% 40% at 10% 90%, rgba(4, 61, 46, 0.25), transparent 55%);
+    radial-gradient(ellipse 80% 50% at 50% -8%, rgba(236, 105, 26, 0.06), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 10% 90%, rgba(25, 25, 25, 0.9), transparent 55%);
 }
 
 .page-texture {
@@ -132,24 +147,26 @@ body {
   }
 }
 
-/* ─── Typography ─── */
+/* ─── Typography (Oswald headings, Inter body) ─── */
 .section-eyebrow {
-  font-family: var(--font-family-body);
+  font-family: var(--font-family-display);
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--emerald-400);
+  color: var(--brand-accent);
 }
 
 .hero-headline {
-  font-family: var(--font-family-body);
-  font-weight: 750;
-  font-size: clamp(3.25rem, 5.8vw, 5.6rem);
-  line-height: 0.96;
-  letter-spacing: -0.045em;
+  font-family: var(--font-family-display);
+  font-weight: 600;
+  /* ~h2 mobile, ~h3 desktop — long copy must fit above the fold */
+  font-size: clamp(1.375rem, 2.35vw, 1.875rem);
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  text-transform: none;
   color: var(--text-hi);
-  max-width: 780px;
+  max-width: 36rem;
   text-wrap: balance;
 }
 
@@ -162,11 +179,12 @@ body {
 }
 
 .section-heading {
-  font-family: var(--font-family-body);
-  font-weight: 720;
-  font-size: clamp(2.25rem, 4vw, 3.8rem);
-  line-height: 1;
-  letter-spacing: -0.04em;
+  font-family: var(--font-family-display);
+  font-weight: 600;
+  font-size: clamp(2rem, 3.6vw, 3.25rem);
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   color: var(--text-hi);
   max-width: 760px;
   text-wrap: balance;
@@ -181,20 +199,21 @@ body {
 }
 
 .card-title {
-  font-family: var(--font-family-body);
+  font-family: var(--font-family-display);
   font-size: 1.25rem;
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   color: var(--text-hi);
 }
 
 .price-display {
-  font-family: var(--font-family-body);
+  font-family: var(--font-family-display);
   font-size: 2.25rem;
   line-height: 1;
-  font-weight: 720;
-  letter-spacing: -0.035em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--text-hi);
 }
 
@@ -226,8 +245,9 @@ body {
   letter-spacing: 0.01em;
 }
 
-.text-gradient-emerald {
-  background: linear-gradient(135deg, var(--emerald-300) 0%, var(--emerald-500) 100%);
+.text-gradient-emerald,
+.text-gradient-brand {
+  background: linear-gradient(135deg, #f5a66b 0%, var(--brand-accent) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -250,8 +270,8 @@ body {
 }
 
 .glass-panel-strong {
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(17, 24, 39, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-card);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -267,14 +287,14 @@ body {
 @media (hover: hover) {
   .card-interactive:hover {
     transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.045);
+    border-color: rgba(236, 105, 26, 0.25);
+    background: rgba(25, 25, 25, 0.95);
   }
 }
 
 .card-highlight {
-  border-color: rgba(45, 154, 114, 0.22);
-  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(236, 105, 26, 0.35);
+  background: rgba(17, 24, 39, 0.92);
 }
 
 .icon-circle {
@@ -292,11 +312,11 @@ body {
 .icon-circle svg {
   width: 1.25rem;
   height: 1.25rem;
-  color: var(--emerald-400);
+  color: var(--brand-accent);
 }
 
 .icon-circle--gold svg {
-  color: var(--gold-400);
+  color: var(--brand-accent);
 }
 
 .media-card {
@@ -308,42 +328,35 @@ body {
 
 .image-placeholder {
   background:
-    radial-gradient(ellipse 70% 60% at 25% 20%, rgba(13, 122, 86, 0.28), transparent 55%),
-    radial-gradient(ellipse 50% 50% at 80% 75%, rgba(4, 61, 46, 0.45), transparent 50%),
-    linear-gradient(160deg, var(--emerald-950) 0%, var(--bg-panel) 45%, var(--bg-base) 100%);
+    radial-gradient(ellipse 70% 60% at 25% 20%, rgba(236, 105, 26, 0.18), transparent 55%),
+    radial-gradient(ellipse 50% 50% at 80% 75%, rgba(17, 24, 39, 0.9), transparent 50%),
+    linear-gradient(160deg, var(--brand-bg) 0%, var(--bg-panel) 45%, var(--bg-base) 100%);
 }
 
 /* ─── Buttons ─── */
 .btn-primary {
   font-family: var(--font-family-body);
-  background: linear-gradient(
-    135deg,
-    var(--emerald-600) 0%,
-    var(--emerald-500) 50%,
-    var(--emerald-600) 100%
-  );
-  background-size: 200% 200%;
-  background-position: 0% 50%;
+  background: var(--brand-accent);
   color: var(--text-hi);
   border: none;
-  box-shadow: 0 2px 12px rgba(13, 122, 86, 0.16);
+  box-shadow: 0 2px 12px rgba(236, 105, 26, 0.22);
   transition:
-    background-position 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 0.45s ease,
-    transform 0.45s ease;
+    background 0.35s ease,
+    box-shadow 0.35s ease,
+    transform 0.35s ease;
 }
 
 @media (hover: hover) {
   .btn-primary:hover {
-    background-position: 100% 50%;
-    box-shadow: 0 3px 18px rgba(13, 122, 86, 0.22);
+    background: #d45e16;
+    box-shadow: 0 4px 20px rgba(236, 105, 26, 0.32);
     transform: translateY(-1px);
   }
 }
 
 .btn-glass {
   font-family: var(--font-family-body);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(65, 65, 65, 0.35);
   border: 1px solid var(--card-border);
   backdrop-filter: blur(12px);
   color: var(--text-hi);
@@ -354,8 +367,8 @@ body {
 
 @media (hover: hover) {
   .btn-glass:hover {
-    border-color: rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(236, 105, 26, 0.35);
+    background: rgba(65, 65, 65, 0.55);
   }
 }
 
@@ -364,7 +377,7 @@ body {
 }
 
 .focus-ring:focus-visible {
-  outline: 2px solid var(--emerald-400);
+  outline: 2px solid var(--brand-accent);
   outline-offset: 4px;
 }
 

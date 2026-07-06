@@ -3,9 +3,10 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { MediaSlot } from "@/components/ui/MediaSlot";
+import { PremiumImage } from "@/components/ui/PremiumImage";
 import { MotionReveal } from "@/components/ui/MotionReveal";
 import { HERO_STRIP } from "@/lib/landing-content";
+import { IMAGES } from "@/lib/images";
 import { getSignupHref, LINKS } from "@/lib/links";
 
 export function HeroSection() {
@@ -15,8 +16,8 @@ export function HeroSection() {
       className="relative overflow-hidden pt-24 pb-14 sm:pt-28 sm:pb-16 lg:pt-[7.25rem] lg:pb-20"
     >
       <Container className="relative">
-        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
-          <div>
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-stretch lg:gap-8">
+          <div className="flex flex-col justify-center lg:w-1/2 lg:min-w-0 lg:pr-2">
             <MotionReveal delay={0}>
               <p className="section-eyebrow">
                 For families who take junior golf seriously
@@ -67,14 +68,18 @@ export function HeroSection() {
             </MotionReveal>
           </div>
 
-          <MotionReveal delay={0.08}>
-            <MediaSlot
-              kind="video"
-              label="Connected development"
-              hint="60–90s: lesson → practice → tournament → dashboard → ten-year arc"
-              aspect="wide"
-              className="min-h-[260px] lg:min-h-[340px]"
-            />
+          <MotionReveal delay={0.08} className="lg:w-1/2 lg:min-w-0">
+            <div className="media-card overflow-hidden rounded-[var(--radius-card)] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
+              <PremiumImage
+                src={IMAGES.heroDashboard.src}
+                alt={IMAGES.heroDashboard.alt}
+                priority
+                overlay="none"
+                fit="contain"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="aspect-[1024/942] w-full bg-bg-elevated"
+              />
+            </div>
           </MotionReveal>
         </div>
 

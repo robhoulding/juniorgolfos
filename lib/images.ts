@@ -3,6 +3,14 @@
  * Replace URLs here when commissioning custom photography.
  */
 export const IMAGES = {
+  heroDashboard: {
+    src: "/images/hero-dashboard.jpg",
+    alt: "GolfCoachOS player dashboard showing physical, mental, skill, and on-course performance pillars for a junior golfer",
+  },
+  tournamentScores: {
+    src: "/images/tournament-scores.jpg",
+    alt: "GolfCoachOS tournament and round scores with scorecard stats, error avoidance trends, and rolling averages",
+  },
   hero: {
     src: "https://images.unsplash.com/photo-1587174485993-784922149e22?auto=format&fit=crop&w=1400&q=85",
     alt: "Golf coach guiding a junior golfer through a lesson on the course at golden hour",

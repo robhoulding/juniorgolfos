@@ -32,7 +32,7 @@ export function Logo({ className, compact = false, markOnly = false }: LogoProps
       <span className="flex flex-col gap-1">
         <span
           className={cn(
-            "text-[0.9375rem] font-bold leading-none tracking-[-0.025em] text-text-hi sm:text-base",
+            "font-display text-[0.9375rem] font-semibold uppercase leading-none tracking-[0.04em] text-text-hi sm:text-base",
           )}
         >
           JuniorGolf

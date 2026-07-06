@@ -2,10 +2,11 @@
 
 import { Container } from "@/components/ui/Container";
 import { GlassPanel } from "@/components/ui/GlassPanel";
-import { MediaSlot } from "@/components/ui/MediaSlot";
+import { PremiumImage } from "@/components/ui/PremiumImage";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MotionReveal } from "@/components/ui/MotionReveal";
 import { TOURNAMENT_FLOW } from "@/lib/landing-content";
+import { IMAGES } from "@/lib/images";
 
 export function TournamentsSection() {
   return (
@@ -26,13 +27,16 @@ export function TournamentsSection() {
           </MotionReveal>
 
           <MotionReveal delay={0.08}>
-            <MediaSlot
-              kind="screenshot"
-              label="Scorecard → focus areas"
-              hint="Photo capture → extracted stats → what to work on to lower scores"
-              aspect="wide"
-              className="min-h-[240px]"
-            />
+            <div className="media-card overflow-hidden rounded-[var(--radius-card)] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+              <PremiumImage
+                src={IMAGES.tournamentScores.src}
+                alt={IMAGES.tournamentScores.alt}
+                overlay="none"
+                fit="contain"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="aspect-[1024/795] w-full bg-bg-elevated"
+              />
+            </div>
           </MotionReveal>
         </div>
 

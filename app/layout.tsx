@@ -1,7 +1,20 @@
 import type { Metadata } from "next";
+import { Inter, Oswald } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const oswald = Oswald({
+  subsets: ["latin"],
+  variable: "--font-oswald",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "JuniorGolfOS — Competitive Advantage for Junior Golf Families",
@@ -23,13 +36,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full scroll-smooth">
-      <head>
-        <link
-          href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html
+      lang="en"
+      className={`${inter.variable} ${oswald.variable} h-full scroll-smooth`}
+    >
       <body className="min-h-full font-body">
         <div className="page-shell">
           <div className="page-texture" aria-hidden />
