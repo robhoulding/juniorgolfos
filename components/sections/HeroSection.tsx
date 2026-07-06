@@ -4,8 +4,9 @@ import { ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { PremiumImage } from "@/components/ui/PremiumImage";
+import { BrandName } from "@/components/ui/BrandName";
 import { MotionReveal } from "@/components/ui/MotionReveal";
-import { HERO_HEADLINE, HERO_STRIP, HERO_SUBHEAD, HERO_TRUST_ITEMS } from "@/lib/landing-content";
+import { HERO_HEADLINE_BODY, HERO_STRIP, HERO_SUBHEAD, HERO_TRUST_ITEMS } from "@/lib/landing-content";
 import { IMAGES } from "@/lib/images";
 import { getSignupHref, LINKS } from "@/lib/links";
 
@@ -20,7 +21,7 @@ export function HeroSection() {
           <div className="flex flex-col justify-center lg:w-1/2 lg:min-w-0 lg:pr-2">
             <MotionReveal delay={0}>
               <h1 id="hero-heading" className="hero-headline">
-                {HERO_HEADLINE}
+                <BrandName name="JuniorGolfOS" /> {HERO_HEADLINE_BODY}
               </h1>
             </MotionReveal>
 

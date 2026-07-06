@@ -1,7 +1,7 @@
 import type { FAQItem } from "@/components/ui/FAQAccordion";
 
-export const HERO_HEADLINE =
-  "JuniorGolfOS connects your coach, your practice, your tournaments, your goals, your support team, and your development into one proven long-term player development system.";
+export const HERO_HEADLINE_BODY =
+  "connects your coach, your practice, your tournaments, your goals, your support team, and your development into one proven long-term player development system.";
 
 export const HERO_SUBHEAD =
   "Built on the Coaching in Context™ philosophy, JuniorGolfOS helps your coach, your family, and your support team stay aligned around one player—so no important part of your child's golf journey happens in isolation.";
