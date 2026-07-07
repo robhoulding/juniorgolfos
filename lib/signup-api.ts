@@ -130,9 +130,9 @@ export async function submitPlayerSignup(
     );
   }
 
-  const data = (await response.json()) as
-    | PlayerSignupSuccessResponse
-    | SignupErrorResponse;
+  const data = await parseSignupJson<
+    PlayerSignupSuccessResponse | SignupErrorResponse
+  >(response);
 
   if (
     !response.ok ||
@@ -180,6 +180,23 @@ function signupErrorMessage(data: SignupErrorResponse): string {
   return "Signup failed. Please try again or contact support.";
 }
 
+async function parseSignupJson<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get("content-type") ?? "";
+  const text = await response.text();
+
+  if (!contentType.includes("application/json")) {
+    throw new SignupApiError(
+      "Could not reach GolfCoachOS. Check your connection and try again.",
+    );
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new SignupApiError("Unexpected response from server. Please try again.");
+  }
+}
+
 export async function submitFamilySignup(
   request: SignupRequest,
 ): Promise<SignupSuccessResponse> {
@@ -212,9 +229,9 @@ export async function submitFamilySignup(
     );
   }
 
-  const data = (await response.json()) as
-    | SignupSuccessResponse
-    | SignupErrorResponse;
+  const data = await parseSignupJson<SignupSuccessResponse | SignupErrorResponse>(
+    response,
+  );
 
   if (
     !response.ok ||

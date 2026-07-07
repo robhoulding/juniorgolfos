@@ -1,5 +1,6 @@
-/** Hardcoded production API — avoids Vercel env misconfiguration on /creators. */
-const CREATOR_API_BASE = "https://golfcoachos-api-a2r5.vercel.app";
+import { GOLFCOACHOS_API_URL } from "@/lib/golfcoachos-api-url";
+
+const CREATOR_API_BASE = GOLFCOACHOS_API_URL;
 
 export type CreatorShowcase = {
   stats: {

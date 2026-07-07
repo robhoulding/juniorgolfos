@@ -1,23 +1,8 @@
+import { GOLFCOACHOS_API_URL } from "@/lib/golfcoachos-api-url";
+
 /** Server-only backend URL for creator proxies — never the marketing site. */
-function backendApiUrl(): string {
-  const serverUrl = process.env.GOLFCOACHOS_API_URL?.trim().replace(/\/$/, "");
-  if (serverUrl && !serverUrl.includes("juniorgolfos.com")) {
-    return serverUrl;
-  }
-
-  const publicUrl = process.env.NEXT_PUBLIC_GOLFCOACHOS_API_URL?.trim().replace(
-    /\/$/,
-    "",
-  );
-  if (publicUrl && !publicUrl.includes("juniorgolfos.com")) {
-    return publicUrl;
-  }
-
-  return "https://golfcoachos-api-a2r5.vercel.app";
-}
-
 export function creatorApiUrl(path: string): string {
-  return `${backendApiUrl()}${path.startsWith("/") ? path : `/${path}`}`;
+  return `${GOLFCOACHOS_API_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 export async function proxyCreatorGet(path: string): Promise<Response> {
