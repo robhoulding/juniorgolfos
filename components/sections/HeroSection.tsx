@@ -38,6 +38,9 @@ export function HeroSection() {
                 <Button variant="secondary" size="lg" href={getPlayerSignupHref()}>
                   I&apos;m a player
                 </Button>
+                <Button variant="secondary" size="lg" href={LINKS.creators}>
+                  See creator wins
+                </Button>
                 <Button variant="secondary" size="lg" href={LINKS.create}>
                   Create &amp; earn
                 </Button>

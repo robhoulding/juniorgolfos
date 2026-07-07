@@ -4,6 +4,7 @@ import { DEFAULT_AFFILIATE_TOKEN } from "@/lib/api-config";
 export const LINKS = {
   signup: "/signup",
   create: "/create",
+  creators: "/creators",
   pricing: "/pricing",
   coaches: "/#join",
   problem: "/#problem",

@@ -511,6 +511,13 @@ function CreatorHubContent() {
         <MotionReveal delay={0.18} className="mt-12 text-center">
           <p className="text-sm text-text-low">
             <Link
+              href={LINKS.creators}
+              className="focus-ring rounded text-emerald-400 hover:text-emerald-300"
+            >
+              See featured cuts &amp; payout wins
+            </Link>
+            {" · "}
+            <Link
               href={LINKS.home}
               className="focus-ring rounded text-emerald-400 hover:text-emerald-300"
             >
