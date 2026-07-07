@@ -3,12 +3,8 @@ export const GOLFCOACHOS_API_URL = "https://golfcoachos-api-a2r5.vercel.app";
 
 function isApiDeploymentUrl(url: string): boolean {
   if (!url) return false;
-  if (url.includes("juniorgolfos.com")) return false;
-  if (url.includes("golfcoachos.com") && !url.includes("golfcoachos-api")) {
-    return false;
-  }
-  if (url.includes("golfacademyos.com")) return false;
-  return url.includes("golfcoachos-api") || url.includes("vercel.app");
+  // Only the GolfCoachOS API deployment — never marketing sites or JuniorGolfOS Vercel URLs.
+  return url.includes("golfcoachos-api");
 }
 
 export function resolveApiBaseUrl(): string {

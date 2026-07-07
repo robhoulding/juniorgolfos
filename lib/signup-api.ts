@@ -1,5 +1,3 @@
-import { API_BASE_URL } from "@/lib/api-config";
-
 export type SignupCoach = {
   coach_id: string;
   display_name: string;
@@ -80,13 +78,13 @@ export type PlayerSignupRequest = {
 export async function validatePlayerReferral(
   token: string,
 ): Promise<PlayerReferralValidation> {
-  const url = new URL(`${API_BASE_URL}/api/players/referral/validate`);
-  url.searchParams.set("ref", token);
-
-  const response = await fetch(url.toString(), {
-    method: "GET",
-    headers: { Accept: "application/json" },
-  });
+  const response = await fetch(
+    `/api/players/referral/validate?ref=${encodeURIComponent(token)}`,
+    {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    },
+  );
 
   if (!response.ok) {
     return { valid: false, reason: "not_found" };
@@ -119,7 +117,7 @@ export async function submitPlayerSignup(
 
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/signup/player-start`, {
+    response = await fetch("/api/signup/player-start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -151,13 +149,13 @@ export async function submitPlayerSignup(
 export async function validateInvitation(
   token: string,
 ): Promise<InvitationValidation> {
-  const url = new URL(`${API_BASE_URL}/api/invitations/validate`);
-  url.searchParams.set("invite", token);
-
-  const response = await fetch(url.toString(), {
-    method: "GET",
-    headers: { Accept: "application/json" },
-  });
+  const response = await fetch(
+    `/api/invitations/validate?invite=${encodeURIComponent(token)}`,
+    {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    },
+  );
 
   if (!response.ok) {
     throw new SignupApiError("Could not verify your invitation. Try again.");
@@ -202,8 +200,8 @@ export async function submitFamilySignup(
 ): Promise<SignupSuccessResponse> {
   const isInvitation = Boolean(request.invitationToken);
   const endpoint = isInvitation
-    ? `${API_BASE_URL}/api/signup/quick-start`
-    : `${API_BASE_URL}/api/coaches/affiliate-signup`;
+    ? "/api/signup/quick-start"
+    : "/api/coaches/affiliate-signup";
 
   const body: Record<string, unknown> = {
     parent: request.parent,
