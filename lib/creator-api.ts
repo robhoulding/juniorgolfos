@@ -26,6 +26,10 @@ export type CreatorDashboard = {
     account_credits: number;
     coach_name: string | null;
     academy_name: string | null;
+    referral_click_count: number;
+    referral_signup_count: number;
+    referral_paid_signup_count: number;
+    invite_link: string;
   };
   submissions: CreatorSubmission[];
 };
@@ -33,8 +37,17 @@ export type CreatorDashboard = {
 export type CreatorRewardsSummary = {
   summary: {
     account_credits: number;
+    referral_click_count: number;
+    referral_signup_count: number;
+    referral_paid_signup_count: number;
     pending_cash_cents: number;
+    eligible_cash_cents: number;
     total_rewards: number;
+  };
+  payout_policy?: {
+    hold_days: number;
+    cadence: string;
+    note: string;
   };
   rewards: Array<{
     id: string;
@@ -43,6 +56,8 @@ export type CreatorRewardsSummary = {
     credit_amount: number | null;
     reason: string;
     status: string;
+    hold_until: string | null;
+    eligible_at: string | null;
     created_at: string;
   }>;
 };
@@ -119,6 +134,7 @@ export async function submitCreatorContent(params: {
   playbookKey: CreatorPlaybookKey;
   caption?: string;
   storagePath: string;
+  requestFeatured?: boolean;
 }): Promise<{ message: string }> {
   const response = await fetch(`${API_BASE_URL}/api/creator/content/submit`, {
     method: "POST",
@@ -128,6 +144,7 @@ export async function submitCreatorContent(params: {
       playbook_key: params.playbookKey,
       caption: params.caption,
       storage_path: params.storagePath,
+      request_featured: params.requestFeatured === true,
     }),
   });
 

@@ -64,10 +64,12 @@ function CreatorHubContent() {
   const [selectedPlaybook, setSelectedPlaybook] =
     useState<CreatorPlaybookKey | null>(null);
   const [caption, setCaption] = useState("");
+  const [requestFeatured, setRequestFeatured] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
+  const [inviteCopied, setInviteCopied] = useState(false);
 
   const reload = useCallback(async () => {
     if (!referralToken) return;
@@ -119,10 +121,12 @@ function CreatorHubContent() {
         playbookKey: selectedPlaybook,
         caption: caption.trim() || undefined,
         storagePath: upload.storage_path,
+        requestFeatured,
       });
 
       setSubmitSuccess(result.message);
       setCaption("");
+      setRequestFeatured(false);
       setVideoFile(null);
       setSelectedPlaybook(null);
       await reload();
@@ -134,6 +138,18 @@ function CreatorHubContent() {
       );
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const copyInviteLink = async () => {
+    const link = dashboard?.player.invite_link;
+    if (!link) return;
+    try {
+      await navigator.clipboard.writeText(link);
+      setInviteCopied(true);
+      window.setTimeout(() => setInviteCopied(false), 2000);
+    } catch {
+      setInviteCopied(false);
     }
   };
 
@@ -177,11 +193,10 @@ function CreatorHubContent() {
             Make the videos. We handle rewards.
           </h1>
           <p className="section-subhead mx-auto mt-5 max-w-2xl">
-            Film how you use JuniorGolfOS — tournament scores, TrackMan data,
-            trainer notes, or your honest story. Submit for coach approval.
-            Earn account credits and cash bounties when your clips and invite
-            link drive signups. Reward amounts are set by GolfCoachOS; your
-            coach still earns recurring commission on upgrades.
+            Film how you use JuniorGolfOS, upload your clip, and share your
+            tracked invite link. Rewards are automatic — link clicks and
+            signups. GolfCoachOS reviews only if you opt in for featuring or
+            cash bounties. Coaches are notified only when you name them.
           </p>
         </MotionReveal>
 
@@ -198,32 +213,71 @@ function CreatorHubContent() {
         {dashboard && rewards && (
           <>
             <MotionReveal delay={0.05} className="mt-10">
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 <GlassPanel className="p-5 text-center">
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-emerald-400">
-                    Account credits
+                    Link clicks
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-text-hi">
-                    ${rewards.summary.account_credits.toFixed(2)}
+                    {rewards.summary.referral_click_count}
                   </p>
                 </GlassPanel>
                 <GlassPanel className="p-5 text-center">
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-emerald-400">
-                    Pending cash
+                    Free signups
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-text-hi">
-                    ${(rewards.summary.pending_cash_cents / 100).toFixed(2)}
+                    {rewards.summary.referral_signup_count}
                   </p>
                 </GlassPanel>
                 <GlassPanel className="p-5 text-center">
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-emerald-400">
-                    Submissions
+                    Paid signups
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-text-hi">
-                    {dashboard.submissions.length}
+                    {rewards.summary.referral_paid_signup_count}
+                  </p>
+                </GlassPanel>
+                <GlassPanel className="p-5 text-center">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-emerald-400">
+                    Eligible cash
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-text-hi">
+                    ${(rewards.summary.eligible_cash_cents / 100).toFixed(2)}
+                  </p>
+                </GlassPanel>
+                <GlassPanel className="p-5 text-center">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-emerald-400">
+                    In hold
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-text-hi">
+                    $
+                    {(
+                      (rewards.summary.pending_cash_cents -
+                        rewards.summary.eligible_cash_cents) /
+                      100
+                    ).toFixed(2)}
                   </p>
                 </GlassPanel>
               </div>
+
+              <GlassPanel className="mt-4 p-5">
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-emerald-400">
+                  Your tracked invite link
+                </p>
+                <p className="mt-2 break-all text-sm text-text-mid">
+                  {dashboard.player.invite_link}
+                </p>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  type="button"
+                  className="mt-4"
+                  onClick={copyInviteLink}
+                >
+                  {inviteCopied ? "Copied!" : "Copy invite link"}
+                </Button>
+              </GlassPanel>
               {(dashboard.player.coach_name || dashboard.player.academy_name) && (
                 <p className="mt-4 text-center text-sm text-text-low">
                   {dashboard.player.coach_name && (
@@ -324,7 +378,7 @@ function CreatorHubContent() {
                   <FormField
                     id="creatorCaption"
                     label="Caption (optional)"
-                    hint="One line about what you showed"
+                    hint="Naming your coach or academy triggers a coach heads-up only — not a blocker"
                   >
                     <input
                       id="creatorCaption"
@@ -337,6 +391,24 @@ function CreatorHubContent() {
                       disabled={submitting}
                     />
                   </FormField>
+
+                  <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+                    <input
+                      type="checkbox"
+                      className="mt-1 size-4 rounded border-white/20 accent-emerald-500"
+                      checked={requestFeatured}
+                      onChange={(e) => setRequestFeatured(e.target.checked)}
+                      disabled={submitting}
+                    />
+                    <span className="text-sm text-text-mid">
+                      <span className="font-medium text-text-hi">
+                        Submit for GolfCoachOS featuring / cash bounty
+                      </span>
+                      <br />
+                      Optional — sends this clip to our team for review. You can
+                      still share immediately with your invite link either way.
+                    </span>
+                  </label>
 
                   {submitError && (
                     <p
@@ -368,7 +440,7 @@ function CreatorHubContent() {
                     {submitting
                       ? "Uploading…"
                       : selectedPlaybook
-                        ? "Submit for coach review"
+                        ? "Upload & share"
                         : "Select a playbook video first"}
                     {!submitting && <ArrowRight className="size-4" aria-hidden />}
                   </Button>
@@ -426,10 +498,10 @@ function CreatorHubContent() {
                   aria-hidden
                 />
                 <p className="mt-4 text-sm leading-relaxed text-text-mid">
-                  Rewards are flexible — account credits for great content, cash
-                  for views and paid signups through your link. Coaches keep
-                  their 25% recurring commission; player bounties come from
-                  platform marketing. Amounts TBD — your work gets logged now.
+                  {rewards.payout_policy?.note ??
+                    "Cash bounties require a paid subscription that stays active through a 30-day hold. Payouts are batched quarterly."}{" "}
+                  Free signups count on your dashboard but never pay cash.
+                  Coaches keep their 25% recurring commission separately.
                 </p>
               </GlassPanel>
             </MotionReveal>

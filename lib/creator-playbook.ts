@@ -50,13 +50,18 @@ export type CreatorPlaybookKey = (typeof CREATOR_PLAYBOOK)[number]["key"];
 export const CREATOR_RULES = [
   "30–60 seconds, vertical (9:16), good lighting",
   "Show the real app on screen for at least half the video",
-  "Use your teammate invite link when you share — rewards track automatically",
+  "Share using your tracked invite link — clicks and signups earn rewards automatically",
+  "Coach review only if you name your coach or academy in the clip",
   "No copyrighted music; keep it authentic",
 ] as const;
 
 export const CREATOR_STATUS_LABELS: Record<string, string> = {
-  pending: "Awaiting coach review",
-  coach_approved: "Coach approved — platform review optional",
-  platform_approved: "Featured — eligible for bonuses",
+  live: "Live — share with your invite link",
+  pending_coach: "Coach heads-up (you named them)",
+  pending_platform: "In GolfCoachOS review queue",
+  featured: "Featured — bonus eligible",
   rejected: "Needs a reshoot",
+  pending: "Submitted",
+  coach_approved: "Live",
+  platform_approved: "Featured",
 };
