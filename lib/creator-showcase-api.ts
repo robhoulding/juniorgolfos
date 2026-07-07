@@ -1,5 +1,3 @@
-import { API_BASE_URL } from "@/lib/api-config";
-
 export type CreatorShowcase = {
   stats: {
     total_paid_out_cents: number;
@@ -26,34 +24,57 @@ export type CreatorShowcase = {
   }>;
 };
 
+async function readJsonResponse<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get("content-type") ?? "";
+  const text = await response.text();
+
+  if (!contentType.includes("application/json")) {
+    throw new Error(
+      "Could not reach GolfCoachOS. Try again in a moment or email hello@juniorgolfos.com.",
+    );
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error("Unexpected response from server. Please try again.");
+  }
+}
+
 export async function fetchCreatorShowcase(): Promise<CreatorShowcase> {
-  const response = await fetch(`${API_BASE_URL}/api/creator/showcase`, {
+  const response = await fetch("/api/creator/showcase", {
     headers: { Accept: "application/json" },
-    next: { revalidate: 300 },
+    cache: "no-store",
   });
 
-  const data = await response.json();
+  const data = await readJsonResponse<CreatorShowcase & { error?: string }>(
+    response,
+  );
+
   if (!response.ok) {
     throw new Error(data.error ?? "Could not load creator showcase.");
   }
 
-  return data as CreatorShowcase;
+  return data;
 }
 
 export async function subscribeCreatorNewsletter(
   email: string,
   role: "parent" | "player" = "parent",
 ): Promise<string> {
-  const response = await fetch(`${API_BASE_URL}/api/creator/newsletter`, {
+  const response = await fetch("/api/creator/newsletter", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, role }),
   });
 
-  const data = await response.json();
+  const data = await readJsonResponse<{ success?: boolean; message?: string; error?: string }>(
+    response,
+  );
+
   if (!response.ok || !data.success) {
     throw new Error(data.error ?? "Could not subscribe.");
   }
 
-  return data.message as string;
+  return data.message ?? "You're on the list!";
 }
