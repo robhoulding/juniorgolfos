@@ -1,3 +1,6 @@
+/** Hardcoded production API — avoids Vercel env misconfiguration on /creators. */
+const CREATOR_API_BASE = "https://golfcoachos-api-a2r5.vercel.app";
+
 export type CreatorShowcase = {
   stats: {
     total_paid_out_cents: number;
@@ -42,7 +45,7 @@ async function readJsonResponse<T>(response: Response): Promise<T> {
 }
 
 export async function fetchCreatorShowcase(): Promise<CreatorShowcase> {
-  const response = await fetch("/api/creator/showcase", {
+  const response = await fetch(`${CREATOR_API_BASE}/api/creator/showcase`, {
     headers: { Accept: "application/json" },
     cache: "no-store",
   });
@@ -62,15 +65,17 @@ export async function subscribeCreatorNewsletter(
   email: string,
   role: "parent" | "player" = "parent",
 ): Promise<string> {
-  const response = await fetch("/api/creator/newsletter", {
+  const response = await fetch(`${CREATOR_API_BASE}/api/creator/newsletter`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, role }),
   });
 
-  const data = await readJsonResponse<{ success?: boolean; message?: string; error?: string }>(
-    response,
-  );
+  const data = await readJsonResponse<{
+    success?: boolean;
+    message?: string;
+    error?: string;
+  }>(response);
 
   if (!response.ok || !data.success) {
     throw new Error(data.error ?? "Could not subscribe.");
