@@ -35,6 +35,8 @@ export type SignupSuccessResponse = {
   sign_in_url?: string | null;
   redirect_url?: string | null;
   player_dashboard_url?: string | null;
+  already_registered?: boolean;
+  message?: string;
 };
 
 export type SignupErrorResponse = {
@@ -200,6 +202,9 @@ function signupErrorMessage(data: SignupErrorResponse): string {
   }
   if (data.reason === "invalid_affiliate") {
     return "This coach link is not valid. Ask your coach for a new signup link.";
+  }
+  if (data.reason === "same_coach") {
+    return "You're already signed up with this coach. Try signing in, or use a different email for a new test account.";
   }
   if (data.error) return data.error;
   return "Signup failed. Please try again or contact support.";

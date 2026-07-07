@@ -142,6 +142,7 @@ function SignupFormContent() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [signInUrl, setSignInUrl] = useState<string | null>(null);
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [playerReferralLink, setPlayerReferralLink] = useState<string | null>(
     null,
   );
@@ -392,6 +393,7 @@ function SignupFormContent() {
 
         setSignInUrl(result.sign_in_url ?? result.redirect_url ?? null);
         setPlayerReferralLink(result.player_referral_link ?? null);
+        setAlreadyRegistered(Boolean(result.already_registered));
         setSubmitted(true);
         return;
       }
@@ -415,6 +417,7 @@ function SignupFormContent() {
 
       const nextUrl = result.sign_in_url ?? result.redirect_url ?? null;
       setSignInUrl(nextUrl);
+      setAlreadyRegistered(Boolean(result.already_registered));
       setSubmitted(true);
     } catch (err) {
       setError(
@@ -441,14 +444,18 @@ function SignupFormContent() {
                 <CheckCircle2 className="size-8 text-emerald-400" aria-hidden />
               </div>
               <h1 className="section-heading mx-auto mt-8">
-                {isPlayerMode
-                  ? "Your player profile is ready."
-                  : "Your family workspace is ready."}
+                {alreadyRegistered
+                  ? "You're already signed up."
+                  : isPlayerMode
+                    ? "Your player profile is ready."
+                    : "Your family workspace is ready."}
               </h1>
               <p className="section-subhead mx-auto mt-5">
-                {isPlayerMode
-                  ? "Check your email for next steps, then sign in to open your dashboard. Invite teammates with your link below — Structure is free."
-                  : "We've sent a confirmation email with next steps. Sign in to open your player dashboard — Structure is free, no credit card required."}
+                {alreadyRegistered
+                  ? "This email already has a free account with this coach. Use the button below to continue — or use a different email if you meant to create a new test account."
+                  : isPlayerMode
+                    ? "Check your email for next steps, then sign in to open your dashboard. Invite teammates with your link below — Structure is free."
+                    : "We've sent a confirmation email with next steps. Sign in to open your player dashboard — Structure is free, no credit card required."}
               </p>
               {isPlayerMode && playerReferralLink && (
                 <div className="mt-8 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-left">
