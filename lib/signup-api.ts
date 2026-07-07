@@ -75,6 +75,33 @@ export type PlayerSignupRequest = {
   playerReferralToken?: string;
 };
 
+export type CoachAffiliateValidation =
+  | { valid: false; reason: string }
+  | {
+      valid: true;
+      display_name: string;
+      academy_name: string | null;
+      affiliate_token: string | null;
+    };
+
+export async function validateCoachAffiliate(
+  token: string,
+): Promise<CoachAffiliateValidation> {
+  const response = await fetch(
+    `/api/coaches/affiliate-validate?coach=${encodeURIComponent(token)}`,
+    {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    },
+  );
+
+  if (!response.ok) {
+    return { valid: false, reason: "not_found" };
+  }
+
+  return response.json() as Promise<CoachAffiliateValidation>;
+}
+
 export async function validatePlayerReferral(
   token: string,
 ): Promise<PlayerReferralValidation> {

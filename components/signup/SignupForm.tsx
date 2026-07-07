@@ -22,8 +22,10 @@ import {
   SignupApiError,
   submitFamilySignup,
   submitPlayerSignup,
+  validateCoachAffiliate,
   validateInvitation,
   validatePlayerReferral,
+  type CoachAffiliateValidation,
   type InvitationValidation,
   type PlayerReferralValidation,
 } from "@/lib/signup-api";
@@ -123,11 +125,18 @@ function SignupFormContent() {
   );
   const [playerReferral, setPlayerReferral] =
     useState<PlayerReferralValidation | null>(null);
+  const [coachAffiliate, setCoachAffiliate] =
+    useState<CoachAffiliateValidation | null>(null);
   const [invitationLoading, setInvitationLoading] = useState(
     Boolean(inviteToken) && !isPlayerMode,
   );
   const [playerReferralLoading, setPlayerReferralLoading] = useState(
     Boolean(playerRefToken) && isPlayerMode,
+  );
+  const [coachAffiliateLoading, setCoachAffiliateLoading] = useState(
+    Boolean(coachToken || DEFAULT_AFFILIATE_TOKEN) &&
+      !inviteToken &&
+      !(isPlayerMode && playerRefToken),
   );
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -139,15 +148,26 @@ function SignupFormContent() {
   const [referralCopied, setReferralCopied] = useState(false);
 
   const effectiveCoachToken = useMemo(() => {
-    if (coachToken) return coachToken;
+    if (coachToken) {
+      if (coachAffiliate?.valid && coachAffiliate.affiliate_token) {
+        return coachAffiliate.affiliate_token;
+      }
+      return coachToken;
+    }
     if (
       playerReferral?.valid &&
       playerReferral.referrer.coach_affiliate_token
     ) {
       return playerReferral.referrer.coach_affiliate_token;
     }
-    return DEFAULT_AFFILIATE_TOKEN;
-  }, [coachToken, playerReferral]);
+    if (DEFAULT_AFFILIATE_TOKEN) {
+      if (coachAffiliate?.valid && coachAffiliate.affiliate_token) {
+        return coachAffiliate.affiliate_token;
+      }
+      return DEFAULT_AFFILIATE_TOKEN;
+    }
+    return "";
+  }, [coachToken, playerReferral, coachAffiliate]);
 
   const affiliateToken = effectiveCoachToken;
 
@@ -164,8 +184,12 @@ function SignupFormContent() {
         : "none";
 
   const canSubmit = isPlayerMode
-    ? signupMode !== "none" && !playerReferralLoading
-    : signupMode !== "none" && !invitationLoading;
+    ? signupMode !== "none" &&
+      !playerReferralLoading &&
+      !coachAffiliateLoading
+    : signupMode !== "none" &&
+      !invitationLoading &&
+      !coachAffiliateLoading;
 
   useEffect(() => {
     if (!inviteToken || isPlayerMode) {
@@ -229,6 +253,40 @@ function SignupFormContent() {
     };
   }, [isPlayerMode, playerRefToken]);
 
+  useEffect(() => {
+    const rawCoachToken =
+      coachToken ||
+      (!inviteToken && !(isPlayerMode && playerRefToken)
+        ? DEFAULT_AFFILIATE_TOKEN
+        : "");
+
+    if (!rawCoachToken.trim() || inviteToken || (isPlayerMode && playerRefToken)) {
+      setCoachAffiliateLoading(false);
+      setCoachAffiliate(null);
+      return;
+    }
+
+    let cancelled = false;
+    setCoachAffiliateLoading(true);
+
+    validateCoachAffiliate(rawCoachToken)
+      .then((result) => {
+        if (!cancelled) setCoachAffiliate(result);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCoachAffiliate({ valid: false, reason: "not_found" });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setCoachAffiliateLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [coachToken, inviteToken, isPlayerMode, playerRefToken]);
+
   const invitationError = useMemo(() => {
     if (!inviteToken || invitationLoading) return null;
     if (!invitation || invitation.valid) return null;
@@ -241,12 +299,40 @@ function SignupFormContent() {
     return playerReferralReasonMessage(playerReferral.reason);
   }, [isPlayerMode, playerRefToken, playerReferral, playerReferralLoading]);
 
+  const coachAffiliateError = useMemo(() => {
+    const rawCoachToken =
+      coachToken ||
+      (!inviteToken && !(isPlayerMode && playerRefToken)
+        ? DEFAULT_AFFILIATE_TOKEN
+        : "");
+    if (!rawCoachToken.trim() || inviteToken || coachAffiliateLoading) {
+      return null;
+    }
+    if (isPlayerMode && playerRefToken && playerReferralLoading) return null;
+    if (!coachAffiliate || coachAffiliate.valid) return null;
+    return "This coach link is not valid. Ask your coach for a new signup link.";
+  }, [
+    coachToken,
+    inviteToken,
+    isPlayerMode,
+    playerRefToken,
+    coachAffiliate,
+    coachAffiliateLoading,
+    playerReferralLoading,
+  ]);
+
   const coachBanner = useMemo(() => {
     if (isPlayerMode && playerReferral?.valid) {
       return `${playerReferral.referrer.first_name} invited you to join their team on JuniorGolfOS.`;
     }
     if (invitation?.valid) {
       return `You're joining ${invitation.coach.display_name}'s development program.`;
+    }
+    if (signupMode === "affiliate" && coachAffiliate?.valid) {
+      const name = coachAffiliate.display_name?.trim();
+      return name
+        ? `You're joining ${name}'s program on JuniorGolfOS.`
+        : "You're signing up through your coach's link.";
     }
     if (signupMode === "affiliate" && coachToken) {
       return "You're signing up through your coach's link.";
@@ -462,17 +548,19 @@ function SignupFormContent() {
           </p>
         </MotionReveal>
 
-        {(invitationLoading || playerReferralLoading) && (
+        {(invitationLoading || playerReferralLoading || coachAffiliateLoading) && (
           <MotionReveal delay={0.04} className="mt-8 text-center">
             <p className="text-sm text-text-low">
               {playerReferralLoading
                 ? "Verifying your teammate invite…"
+                : coachAffiliateLoading
+                  ? "Verifying your coach link…"
                 : "Verifying your invitation…"}
             </p>
           </MotionReveal>
         )}
 
-        {coachBanner && !invitationError && !playerReferralError && (
+        {coachBanner && !invitationError && !playerReferralError && !coachAffiliateError && (
           <MotionReveal delay={0.04} className="mt-8">
             <p className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-center text-sm text-emerald-100">
               {coachBanner}
@@ -520,9 +608,34 @@ function SignupFormContent() {
           </MotionReveal>
         )}
 
+        {coachAffiliateError && (
+          <MotionReveal delay={0.05} className="mt-8">
+            <GlassPanel className="border-amber-500/20 bg-amber-500/5 p-5 text-center">
+              <p className="text-sm text-amber-100">{coachAffiliateError}</p>
+              <p className="mt-3 text-xs text-text-mid">
+                In GolfCoachOS, open your affiliate link and copy the code after{" "}
+                <code className="text-amber-50">coach=</code> in the URL. Paste
+                that into Vercel as{" "}
+                <code className="text-amber-50">NEXT_PUBLIC_DEFAULT_AFFILIATE_TOKEN</code>
+                , or share a link like{" "}
+                <code className="text-amber-50">juniorgolfos.com/signup?coach=YOUR_CODE</code>.
+              </p>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="mt-4"
+                href={LINKS.golfCoachOS}
+              >
+                Open GolfCoachOS
+              </Button>
+            </GlassPanel>
+          </MotionReveal>
+        )}
+
         {signupMode === "none" &&
           !invitationLoading &&
-          !playerReferralLoading && (
+          !playerReferralLoading &&
+          !coachAffiliateLoading && (
           <MotionReveal delay={0.05} className="mt-8">
             <GlassPanel className="border-amber-500/20 bg-amber-500/5 p-5 text-center">
               <p className="text-sm text-amber-100">
@@ -744,6 +857,7 @@ function SignupFormContent() {
                     submitting ||
                     !canSubmit ||
                     Boolean(invitationError) ||
+                    Boolean(coachAffiliateError) ||
                     Boolean(playerReferralError && playerRefToken)
                   }
                 >
