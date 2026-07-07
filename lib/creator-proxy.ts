@@ -1,42 +1,74 @@
-import { API_BASE_URL } from "@/lib/api-config";
+/** Server-only backend URL for creator proxies — never the marketing site. */
+function backendApiUrl(): string {
+  const serverUrl = process.env.GOLFCOACHOS_API_URL?.trim().replace(/\/$/, "");
+  if (serverUrl && !serverUrl.includes("juniorgolfos.com")) {
+    return serverUrl;
+  }
+
+  const publicUrl = process.env.NEXT_PUBLIC_GOLFCOACHOS_API_URL?.trim().replace(
+    /\/$/,
+    "",
+  );
+  if (publicUrl && !publicUrl.includes("juniorgolfos.com")) {
+    return publicUrl;
+  }
+
+  return "https://golfcoachos-api-a2r5.vercel.app";
+}
 
 export function creatorApiUrl(path: string): string {
-  return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  return `${backendApiUrl()}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 export async function proxyCreatorGet(path: string): Promise<Response> {
-  const upstream = await fetch(creatorApiUrl(path), {
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  });
-  const body = await upstream.text();
-  return new Response(body, {
-    status: upstream.status,
-    headers: {
-      "Content-Type": upstream.headers.get("content-type") ?? "application/json",
-    },
-  });
+  try {
+    const upstream = await fetch(creatorApiUrl(path), {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+    const body = await upstream.text();
+    return new Response(body, {
+      status: upstream.status,
+      headers: {
+        "Content-Type": upstream.headers.get("content-type") ?? "application/json",
+      },
+    });
+  } catch (error) {
+    console.error("[creator-proxy GET]", path, error);
+    return Response.json(
+      { error: "Could not reach GolfCoachOS API." },
+      { status: 502 },
+    );
+  }
 }
 
 export async function proxyCreatorPost(
   path: string,
   request: Request,
 ): Promise<Response> {
-  const payload = await request.text();
-  const upstream = await fetch(creatorApiUrl(path), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: payload,
-    cache: "no-store",
-  });
-  const body = await upstream.text();
-  return new Response(body, {
-    status: upstream.status,
-    headers: {
-      "Content-Type": upstream.headers.get("content-type") ?? "application/json",
-    },
-  });
+  try {
+    const payload = await request.text();
+    const upstream = await fetch(creatorApiUrl(path), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: payload,
+      cache: "no-store",
+    });
+    const body = await upstream.text();
+    return new Response(body, {
+      status: upstream.status,
+      headers: {
+        "Content-Type": upstream.headers.get("content-type") ?? "application/json",
+      },
+    });
+  } catch (error) {
+    console.error("[creator-proxy POST]", path, error);
+    return Response.json(
+      { error: "Could not reach GolfCoachOS API." },
+      { status: 502 },
+    );
+  }
 }

@@ -30,7 +30,7 @@ async function readJsonResponse<T>(response: Response): Promise<T> {
 
   if (!contentType.includes("application/json")) {
     throw new Error(
-      "Could not reach GolfCoachOS. Try again in a moment or email hello@juniorgolfos.com.",
+      "Could not load creator wins right now. Please try again in a minute.",
     );
   }
 
