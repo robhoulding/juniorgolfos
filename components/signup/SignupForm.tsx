@@ -15,13 +15,17 @@ import {
   selectClassName,
 } from "@/components/ui/FormField";
 import { DEFAULT_AFFILIATE_TOKEN } from "@/lib/api-config";
-import { LINKS } from "@/lib/links";
+import { getCreateHref, getPlayerSignupHref, LINKS } from "@/lib/links";
 import {
   invitationReasonMessage,
+  playerReferralReasonMessage,
   SignupApiError,
   submitFamilySignup,
+  submitPlayerSignup,
   validateInvitation,
+  validatePlayerReferral,
   type InvitationValidation,
+  type PlayerReferralValidation,
 } from "@/lib/signup-api";
 import {
   ageToDateOfBirth,
@@ -57,6 +61,35 @@ const initialForm: FormState = {
   primaryGoal: "",
 };
 
+type PlayerFormState = {
+  name: string;
+  email: string;
+  playerAge: string;
+};
+
+const initialPlayerForm: PlayerFormState = {
+  name: "",
+  email: "",
+  playerAge: "",
+};
+
+function familySignupHref(coach?: string): string {
+  const params = new URLSearchParams();
+  if (coach?.trim()) {
+    params.set("coach", coach.trim());
+  }
+  const query = params.toString();
+  return query ? `${LINKS.signup}?${query}` : LINKS.signup;
+}
+
+function referralTokenFromLink(link: string): string | null {
+  try {
+    return new URL(link).searchParams.get("ref");
+  } catch {
+    return null;
+  }
+}
+
 function SignupFormFallback() {
   return (
     <div className="flex min-h-[70vh] items-center justify-center py-24">
@@ -75,33 +108,67 @@ export function SignupForm() {
 
 function SignupFormContent() {
   const searchParams = useSearchParams();
+  const isPlayerMode = searchParams.get("role") === "player";
+  const playerRefToken = searchParams.get("ref")?.trim() || "";
   const inviteToken =
     searchParams.get("invite")?.trim() ||
     searchParams.get("token")?.trim() ||
     "";
   const coachToken = searchParams.get("coach")?.trim() || "";
-  const affiliateToken = coachToken || DEFAULT_AFFILIATE_TOKEN;
 
   const [form, setForm] = useState<FormState>(initialForm);
+  const [playerForm, setPlayerForm] = useState<PlayerFormState>(initialPlayerForm);
   const [invitation, setInvitation] = useState<InvitationValidation | null>(
     null,
   );
-  const [invitationLoading, setInvitationLoading] = useState(Boolean(inviteToken));
+  const [playerReferral, setPlayerReferral] =
+    useState<PlayerReferralValidation | null>(null);
+  const [invitationLoading, setInvitationLoading] = useState(
+    Boolean(inviteToken) && !isPlayerMode,
+  );
+  const [playerReferralLoading, setPlayerReferralLoading] = useState(
+    Boolean(playerRefToken) && isPlayerMode,
+  );
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [signInUrl, setSignInUrl] = useState<string | null>(null);
+  const [playerReferralLink, setPlayerReferralLink] = useState<string | null>(
+    null,
+  );
+  const [referralCopied, setReferralCopied] = useState(false);
 
-  const signupMode = inviteToken
-    ? "invitation"
-    : affiliateToken
-      ? "affiliate"
-      : "none";
+  const effectiveCoachToken = useMemo(() => {
+    if (coachToken) return coachToken;
+    if (
+      playerReferral?.valid &&
+      playerReferral.referrer.coach_affiliate_token
+    ) {
+      return playerReferral.referrer.coach_affiliate_token;
+    }
+    return DEFAULT_AFFILIATE_TOKEN;
+  }, [coachToken, playerReferral]);
 
-  const canSubmit = signupMode !== "none" && !invitationLoading;
+  const affiliateToken = effectiveCoachToken;
+
+  const signupMode = isPlayerMode
+    ? playerRefToken && playerReferral?.valid
+      ? "player-referral"
+      : affiliateToken
+        ? "affiliate"
+        : "none"
+    : inviteToken
+      ? "invitation"
+      : affiliateToken
+        ? "affiliate"
+        : "none";
+
+  const canSubmit = isPlayerMode
+    ? signupMode !== "none" && !playerReferralLoading
+    : signupMode !== "none" && !invitationLoading;
 
   useEffect(() => {
-    if (!inviteToken) {
+    if (!inviteToken || isPlayerMode) {
       setInvitationLoading(false);
       return;
     }
@@ -133,7 +200,34 @@ function SignupFormContent() {
     return () => {
       cancelled = true;
     };
-  }, [inviteToken]);
+  }, [inviteToken, isPlayerMode]);
+
+  useEffect(() => {
+    if (!isPlayerMode || !playerRefToken) {
+      setPlayerReferralLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setPlayerReferralLoading(true);
+
+    validatePlayerReferral(playerRefToken)
+      .then((result) => {
+        if (!cancelled) setPlayerReferral(result);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPlayerReferral({ valid: false, reason: "not_found" });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setPlayerReferralLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isPlayerMode, playerRefToken]);
 
   const invitationError = useMemo(() => {
     if (!inviteToken || invitationLoading) return null;
@@ -141,7 +235,16 @@ function SignupFormContent() {
     return invitationReasonMessage(invitation.reason);
   }, [inviteToken, invitation, invitationLoading]);
 
+  const playerReferralError = useMemo(() => {
+    if (!isPlayerMode || !playerRefToken || playerReferralLoading) return null;
+    if (!playerReferral || playerReferral.valid) return null;
+    return playerReferralReasonMessage(playerReferral.reason);
+  }, [isPlayerMode, playerRefToken, playerReferral, playerReferralLoading]);
+
   const coachBanner = useMemo(() => {
+    if (isPlayerMode && playerReferral?.valid) {
+      return `${playerReferral.referrer.first_name} invited you to join their team on JuniorGolfOS.`;
+    }
     if (invitation?.valid) {
       return `You're joining ${invitation.coach.display_name}'s development program.`;
     }
@@ -149,10 +252,12 @@ function SignupFormContent() {
       return "You're signing up through your coach's link.";
     }
     if (signupMode === "affiliate" && DEFAULT_AFFILIATE_TOKEN) {
-      return "Start your free family workspace on JuniorGolfOS.";
+      return isPlayerMode
+        ? "Create your free player profile on JuniorGolfOS."
+        : "Start your free family workspace on JuniorGolfOS.";
     }
     return null;
-  }, [invitation, signupMode, coachToken]);
+  }, [invitation, isPlayerMode, playerReferral, signupMode, coachToken]);
 
   const update =
     (field: keyof FormState) =>
@@ -160,6 +265,24 @@ function SignupFormContent() {
       setError(null);
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
     };
+
+  const updatePlayer =
+    (field: keyof PlayerFormState) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setError(null);
+      setPlayerForm((prev) => ({ ...prev, [field]: e.target.value }));
+    };
+
+  const copyReferralLink = async () => {
+    if (!playerReferralLink) return;
+    try {
+      await navigator.clipboard.writeText(playerReferralLink);
+      setReferralCopied(true);
+      window.setTimeout(() => setReferralCopied(false), 2000);
+    } catch {
+      setReferralCopied(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,6 +292,24 @@ function SignupFormContent() {
     setError(null);
 
     try {
+      if (isPlayerMode) {
+        const age = Number(playerForm.playerAge);
+        const date_of_birth = ageToDateOfBirth(age);
+
+        const result = await submitPlayerSignup({
+          name: playerForm.name.trim(),
+          email: playerForm.email.trim(),
+          date_of_birth,
+          affiliateToken: effectiveCoachToken || undefined,
+          playerReferralToken: playerRefToken || undefined,
+        });
+
+        setSignInUrl(result.sign_in_url ?? result.redirect_url ?? null);
+        setPlayerReferralLink(result.player_referral_link ?? null);
+        setSubmitted(true);
+        return;
+      }
+
       const age = Number(form.playerAge);
       const fallbackLastName =
         parentNameToLastName(form.parentName) ||
@@ -214,13 +355,45 @@ function SignupFormContent() {
                 <CheckCircle2 className="size-8 text-emerald-400" aria-hidden />
               </div>
               <h1 className="section-heading mx-auto mt-8">
-                Your family workspace is ready.
+                {isPlayerMode
+                  ? "Your player profile is ready."
+                  : "Your family workspace is ready."}
               </h1>
               <p className="section-subhead mx-auto mt-5">
-                We&apos;ve sent a confirmation email with next steps. Sign in to
-                open your player dashboard — Structure is free, no credit card
-                required.
+                {isPlayerMode
+                  ? "Check your email for next steps, then sign in to open your dashboard. Invite teammates with your link below — Structure is free."
+                  : "We've sent a confirmation email with next steps. Sign in to open your player dashboard — Structure is free, no credit card required."}
               </p>
+              {isPlayerMode && playerReferralLink && (
+                <div className="mt-8 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-left">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-400">
+                    Invite your teammates
+                  </p>
+                  <p className="mt-2 break-all text-sm text-text-mid">
+                    {playerReferralLink}
+                  </p>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    type="button"
+                    className="mt-4"
+                    onClick={copyReferralLink}
+                  >
+                    {referralCopied ? "Copied!" : "Copy invite link"}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="mt-3 w-full"
+                    href={getCreateHref(
+                      referralTokenFromLink(playerReferralLink) ?? undefined,
+                    )}
+                  >
+                    Create content &amp; earn
+                    <ArrowRight className="size-4" aria-hidden />
+                  </Button>
+                </div>
+              )}
               <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-center">
                 {signInUrl ? (
                   <Button variant="primary" size="lg" href={signInUrl}>
@@ -255,22 +428,51 @@ function SignupFormContent() {
           <Logo className="mx-auto items-center" />
           <p className="section-eyebrow mt-10">Structure · Free</p>
           <h1 className="section-heading mx-auto mt-4">
-            Start your family on JuniorGolfOS
+            {isPlayerMode
+              ? "Join JuniorGolfOS as a player"
+              : "Start your family on JuniorGolfOS"}
           </h1>
           <p className="section-subhead mx-auto mt-5">
-            Connect your coach, your player, and your development team. Upgrade
-            to Intelligence or Optimization only when age, stage, and need
-            require it.
+            {isPlayerMode
+              ? "Build your development profile, connect with your coach, and invite teammates. Upgrade only when you need more."
+              : "Connect your coach, your player, and your development team. Upgrade to Intelligence or Optimization only when age, stage, and need require it."}
+          </p>
+          <p className="mt-5 text-sm text-text-low">
+            {isPlayerMode ? (
+              <>
+                Parent setting up for a junior?{" "}
+                <Link
+                  href={familySignupHref(coachToken)}
+                  className="focus-ring rounded text-emerald-400 hover:text-emerald-300"
+                >
+                  Use family signup
+                </Link>
+              </>
+            ) : (
+              <>
+                Junior golfer signing up yourself?{" "}
+                <Link
+                  href={getPlayerSignupHref({ coach: coachToken })}
+                  className="focus-ring rounded text-emerald-400 hover:text-emerald-300"
+                >
+                  I&apos;m a player
+                </Link>
+              </>
+            )}
           </p>
         </MotionReveal>
 
-        {invitationLoading && (
+        {(invitationLoading || playerReferralLoading) && (
           <MotionReveal delay={0.04} className="mt-8 text-center">
-            <p className="text-sm text-text-low">Verifying your invitation…</p>
+            <p className="text-sm text-text-low">
+              {playerReferralLoading
+                ? "Verifying your teammate invite…"
+                : "Verifying your invitation…"}
+            </p>
           </MotionReveal>
         )}
 
-        {coachBanner && !invitationError && (
+        {coachBanner && !invitationError && !playerReferralError && (
           <MotionReveal delay={0.04} className="mt-8">
             <p className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-center text-sm text-emerald-100">
               {coachBanner}
@@ -302,13 +504,35 @@ function SignupFormContent() {
           </MotionReveal>
         )}
 
-        {signupMode === "none" && !invitationLoading && (
+        {playerReferralError && (
+          <MotionReveal delay={0.05} className="mt-8">
+            <GlassPanel className="border-amber-500/20 bg-amber-500/5 p-5 text-center">
+              <p className="text-sm text-amber-100">{playerReferralError}</p>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="mt-4"
+                href={getPlayerSignupHref({ coach: coachToken })}
+              >
+                Continue without teammate link
+              </Button>
+            </GlassPanel>
+          </MotionReveal>
+        )}
+
+        {signupMode === "none" &&
+          !invitationLoading &&
+          !playerReferralLoading && (
           <MotionReveal delay={0.05} className="mt-8">
             <GlassPanel className="border-amber-500/20 bg-amber-500/5 p-5 text-center">
               <p className="text-sm text-amber-100">
-                To create an account, use the invitation link from your coach or
-                their signup link (with{" "}
-                <code className="text-amber-50">?coach=…</code> in the URL).
+                {isPlayerMode
+                  ? "To create a player account, use your coach's signup link or a teammate invite."
+                  : "To create an account, use the invitation link from your coach or their signup link (with "}
+                {!isPlayerMode && (
+                  <code className="text-amber-50">?coach=…</code>
+                )}
+                {!isPlayerMode && " in the URL)."}
               </p>
               <Button
                 variant="secondary"
@@ -325,6 +549,68 @@ function SignupFormContent() {
         <MotionReveal delay={0.08} className="mt-12">
           <GlassPanel strong className="p-8 sm:p-10">
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+              {isPlayerMode ? (
+                <>
+                  <FormField id="playerFullName" label="Your name">
+                    <input
+                      id="playerFullName"
+                      name="playerFullName"
+                      type="text"
+                      required
+                      autoComplete="name"
+                      placeholder="Your full name"
+                      className={inputClassName}
+                      value={playerForm.name}
+                      onChange={updatePlayer("name")}
+                      disabled={
+                        !canSubmit ||
+                        Boolean(playerReferralError && playerRefToken)
+                      }
+                    />
+                  </FormField>
+
+                  <div className="grid gap-5 sm:grid-cols-[1.4fr_0.6fr]">
+                    <FormField id="playerEmail" label="Your email">
+                      <input
+                        id="playerEmail"
+                        name="playerEmail"
+                        type="email"
+                        required
+                        autoComplete="email"
+                        placeholder="you@email.com"
+                        className={inputClassName}
+                        value={playerForm.email}
+                        onChange={updatePlayer("email")}
+                        disabled={
+                          !canSubmit ||
+                          Boolean(playerReferralError && playerRefToken)
+                        }
+                      />
+                    </FormField>
+
+                    <FormField id="playerSelfAge" label="Your age">
+                      <input
+                        id="playerSelfAge"
+                        name="playerSelfAge"
+                        type="number"
+                        required
+                        min={13}
+                        max={22}
+                        inputMode="numeric"
+                        placeholder="Age"
+                        className={inputClassName}
+                        value={playerForm.playerAge}
+                        onChange={updatePlayer("playerAge")}
+                        disabled={
+                          !canSubmit ||
+                          Boolean(playerReferralError && playerRefToken)
+                        }
+                      />
+                    </FormField>
+                  </div>
+                </>
+              ) : (
+                <>
               <FormField id="familyName" label="Family name">
                 <input
                   id="familyName"
@@ -433,6 +719,8 @@ function SignupFormContent() {
                   </select>
                 </div>
               </FormField>
+                </>
+              )}
 
               {error && (
                 <p
@@ -452,9 +740,18 @@ function SignupFormContent() {
                   size="lg"
                   className="w-full"
                   type="submit"
-                  disabled={submitting || !canSubmit || Boolean(invitationError)}
+                  disabled={
+                    submitting ||
+                    !canSubmit ||
+                    Boolean(invitationError) ||
+                    Boolean(playerReferralError && playerRefToken)
+                  }
                 >
-                  {submitting ? "Creating account…" : "Start Free"}
+                  {submitting
+                    ? "Creating account…"
+                    : isPlayerMode
+                      ? "Create player account"
+                      : "Start Free"}
                   {!submitting && <ArrowRight className="size-4" aria-hidden />}
                 </Button>
               </div>

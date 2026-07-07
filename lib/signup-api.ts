@@ -57,6 +57,97 @@ export class SignupApiError extends Error {
   }
 }
 
+export type PlayerReferralValidation =
+  | { valid: false; reason: string }
+  | {
+      valid: true;
+      referrer: {
+        player_id: string;
+        first_name: string;
+        display_name: string;
+        coach_affiliate_token: string | null;
+      };
+    };
+
+export type PlayerSignupRequest = {
+  name: string;
+  email: string;
+  date_of_birth: string;
+  affiliateToken?: string;
+  playerReferralToken?: string;
+};
+
+export async function validatePlayerReferral(
+  token: string,
+): Promise<PlayerReferralValidation> {
+  const url = new URL(`${API_BASE_URL}/api/players/referral/validate`);
+  url.searchParams.set("ref", token);
+
+  const response = await fetch(url.toString(), {
+    method: "GET",
+    headers: { Accept: "application/json" },
+  });
+
+  if (!response.ok) {
+    return { valid: false, reason: "not_found" };
+  }
+
+  return response.json() as Promise<PlayerReferralValidation>;
+}
+
+export type PlayerSignupSuccessResponse = SignupSuccessResponse & {
+  player_referral_link?: string | null;
+};
+
+export async function submitPlayerSignup(
+  request: PlayerSignupRequest,
+): Promise<PlayerSignupSuccessResponse> {
+  const body: Record<string, unknown> = {
+    player: {
+      name: request.name.trim(),
+      email: request.email.trim(),
+      date_of_birth: request.date_of_birth,
+    },
+  };
+
+  if (request.affiliateToken) {
+    body.affiliate_token = request.affiliateToken;
+  }
+  if (request.playerReferralToken) {
+    body.player_referral_token = request.playerReferralToken;
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/signup/player-start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new SignupApiError(
+      "Could not reach GolfCoachOS. Check your connection and try again.",
+    );
+  }
+
+  const data = (await response.json()) as
+    | PlayerSignupSuccessResponse
+    | SignupErrorResponse;
+
+  if (
+    !response.ok ||
+    !("success" in data && data.success === true) ||
+    ("conversion_required" in data && data.conversion_required)
+  ) {
+    throw new SignupApiError(
+      signupErrorMessage(data as SignupErrorResponse),
+      data as SignupErrorResponse,
+    );
+  }
+
+  return data as PlayerSignupSuccessResponse;
+}
+
 export async function validateInvitation(
   token: string,
 ): Promise<InvitationValidation> {
@@ -149,5 +240,16 @@ export function invitationReasonMessage(reason: string): string {
       return "This invitation link is not valid. Check the link from your coach.";
     default:
       return "This invitation link is not valid.";
+  }
+}
+
+export function playerReferralReasonMessage(reason: string): string {
+  switch (reason) {
+    case "not_found":
+      return "This teammate invite link isn't valid. Ask your friend for a new one or use your coach's link.";
+    case "missing_ref":
+      return "This teammate invite link is incomplete.";
+    default:
+      return "This teammate invite link isn't valid.";
   }
 }

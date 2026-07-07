@@ -8,7 +8,7 @@ import { BrandName } from "@/components/ui/BrandName";
 import { MotionReveal } from "@/components/ui/MotionReveal";
 import { HERO_HEADLINE_BODY, HERO_STRIP, HERO_SUBHEAD, HERO_TRUST_ITEMS } from "@/lib/landing-content";
 import { IMAGES } from "@/lib/images";
-import { getSignupHref, LINKS } from "@/lib/links";
+import { getPlayerSignupHref, getSignupHref, LINKS } from "@/lib/links";
 
 export function HeroSection() {
   return (
@@ -30,10 +30,16 @@ export function HeroSection() {
             </MotionReveal>
 
             <MotionReveal delay={0.1}>
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <Button variant="primary" size="lg" href={getSignupHref()}>
                   Start Free
                   <ArrowRight className="size-4" aria-hidden />
+                </Button>
+                <Button variant="secondary" size="lg" href={getPlayerSignupHref()}>
+                  I&apos;m a player
+                </Button>
+                <Button variant="secondary" size="lg" href={LINKS.create}>
+                  Create &amp; earn
                 </Button>
                 <Button variant="secondary" size="lg" href={LINKS.coaches}>
                   Join through your coach
