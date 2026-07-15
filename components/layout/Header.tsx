@@ -8,6 +8,7 @@ import { getSignupHref, LINKS } from "@/lib/links";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
+import { GoogleTranslateMenu } from "@/components/translate/GoogleTranslateMenu";
 
 const navLinks = [
   { label: "The Advantage", href: LINKS.problem },
@@ -60,6 +61,7 @@ export function Header() {
           </ul>
 
           <div className="hidden items-center gap-3 md:flex">
+            <GoogleTranslateMenu />
             <Button variant="ghost" size="sm" href={LINKS.coaches}>
               Join through coach
             </Button>
@@ -118,6 +120,10 @@ export function Header() {
             ))}
           </ul>
           <div className="mt-4 flex flex-col gap-2 border-t border-white/5 pt-4">
+            <div className="flex items-center justify-between px-1 pb-1">
+              <span className="text-sm text-text-mid">Translate</span>
+              <GoogleTranslateMenu align="left" />
+            </div>
             <Button
               variant="secondary"
               size="md"
