@@ -18,6 +18,8 @@ export const LINKS = {
   home: "/",
   golfCoachOS: "https://golfcoachos.com",
   golfAcademyOS: "https://golfacademyos.com",
+  varsityGolfOS: "https://www.varsitygolfos.com",
+  collegeGolfOS: "https://www.collegegolfos.com",
   community: "https://golfcoachos.com",
 } as const;
 

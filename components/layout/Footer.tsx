@@ -15,6 +15,8 @@ const footerLinks = {
   Ecosystem: [
     { label: "GolfCoachOS", href: LINKS.golfCoachOS, external: true },
     { label: "GolfAcademyOS", href: LINKS.golfAcademyOS, external: true },
+    { label: "VarsityGolfOS", href: LINKS.varsityGolfOS, external: true },
+    { label: "CollegeGolfOS", href: LINKS.collegeGolfOS, external: true },
     { label: "Join through your coach", href: LINKS.coaches },
     { label: "Community", href: LINKS.community, external: true },
   ],
